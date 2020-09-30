@@ -7,7 +7,7 @@ spec:
     - host: nginxk8s.solsng.com
       http:
         paths:
-          - path: /
+          - path: /*
             backend:
               serviceName: magicalnginx-service
               servicePort: http

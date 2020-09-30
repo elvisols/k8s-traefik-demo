@@ -7,5 +7,7 @@ spec:
   ports:
     - port: 80
       protocol: TCP
+      targetPort: http
+      name: http
   selector:
     app: magicalnginx
