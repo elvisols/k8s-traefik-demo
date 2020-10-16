@@ -2,6 +2,9 @@ apiVersion: v1
 kind: Service
 metadata:
   name: magicalnginx-service
+  # when using Traefik ingress controller: Once load > 50% respond with a predefine code or redirect to another service
+  # annotations:
+    # traefik.backend.circuitbreaker: "NetworkErrorRatio() > 0.5"
 spec:
   type: NodePort
   ports:

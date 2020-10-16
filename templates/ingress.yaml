@@ -4,10 +4,17 @@ metadata:
   name: magicalnginx-ingress
 spec:
   rules:
-    - host: nginxk8s.solsng.com
+    - host: web.solsng.com
       http:
         paths:
           - path: /*
             backend:
               serviceName: magicalnginx-service
               servicePort: http
+    # - host: dashboard.solsng.com
+    #   http:
+    #     paths:
+    #       - path: /*
+    #         backend:
+    #           serviceName: traefik-ingress-service
+    #           servicePort: http

@@ -1,0 +1,83 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    # use Traefik ingress controller
+    kubernetes.io/ingress.class: traefik
+    cert-manager.io/cluster-issuer: letsencrypt
+  name: nginx
+  namespace: testing
+spec:
+  rules:
+    - host: ${DOMAIN}
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: nginx
+              servicePort: 80
+  tls:
+    - hosts:
+        - ${DOMAIN}
+      secretName: ${DOMAIN}-cert
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: ${DOMAIN}-cert
+  namespace: testing
+spec:
+  commonName: ${DOMAIN}
+  secretName: ${DOMAIN}-cert
+  issuerRef:
+    name: letsencrypt
+---
+#We can also reconfigure three frontends to serve under one domain like this:
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: all-animals
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    # Because of the traefik.frontend.rule.type: PathPrefixStrip rule you have to use: http://animals.minikube:32484/moose/ instead of http://animals.minikube:32484/moose (add forward slash to the path).
+    traefik.frontend.rule.type: PathPrefixStrip
+spec:
+  rules:
+    - host: animals.minikube
+      http:
+        paths:
+          - path: /bear
+            backend:
+              serviceName: bear
+              servicePort: http
+          - path: /moose
+            backend:
+              serviceName: moose
+              servicePort: http
+          - path: /hare
+            backend:
+              serviceName: hare
+              servicePort: http
+---
+#Let’s split the Traefik between two microservices using the following manifest: This feature can be used for canary releases that should initially receive a small but ever-increasing fraction of traffic over time.
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    traefik.ingress.kubernetes.io/service-weights: |
+      animals-app: 99%
+      animals-app-canary: 1%
+  name: animals-app
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: animals-app
+          servicePort: 80
+        path: /
+      - backend:
+          serviceName: animals-app-canary
+          servicePort: 80
+        path: /
